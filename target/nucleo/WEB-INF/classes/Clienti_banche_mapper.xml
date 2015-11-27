@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+   <mapper namespace="it.sensei.entities.ClientiBanche">
+   <resultMap id="result" type="it.sensei.entities.ClientiBanche" >
+        <result property="clba_id" column="CLBA_ID"/>
+        <result property="ba_id" column="BA_ID"/>
+        <result property="cl_id" column="CL_ID"/>
+        <result property="clba_cc" column="CL_CC"/>
+        <result property="clba_forma_pagam1" column="CLBA_FORMA_PAGAM1"/>
+        <result property="clba_forma_pagam2" column="CLBA_FORMA_PAGAM2"/>
+        <result property="clba_cin" column="CLBA_CIN"/>
+        <result property="clba_iban" column="CLBA_IBAN"/>
+        <result property="clba_intestatario" column="CLBA_INTESTATARIO"/>
+        <result property="clba_nome" column="CLBA_NOME"/>
+        <result property="clba_cognome" column="CLBA_COGNOME"/>
+        <result property="clba_codice_fiscale" column="CLBA_CODICE_FISCALE"/>
+        <!--        one to one     -->
+<!--        <association property="cliente" column="cl_id" javaType="it.sensei.nucleoproject.entita.Clienti"
+            select="selectClientiFromClienti_banche"/>   -->
+   </resultMap>
+ 
+  
+  <select id="getAllCb"  resultMap="result">
+        SELECT * FROM Clienti_banche
+  </select>
+  
+<!--  <select id="GetByJoin" parameterType="java.lang.String" resultType='mypackage.CarBean'>
+    SELECT
+     C.*,W.*
+     FROM CAR C
+     LEFT JOIN WHEEL W
+     ON C.CAR_ID = W.CAR_ID
+     WHERE CAR_ID = #{carId}
+  </select>-->
+  
+<!--  <select id="getById" parameterType="int"  resultMap = "result">
+      SELECT
+        id,
+        nome,
+        cognome,
+        data_di_nascita,
+        codice_fiscale
+      FROM Dipendente
+      WHERE ID = #{id}
+  </select> -->
+  
+<!--  <update id="updateDipendente" parameterType="dip.Dipendente" >
+      UPDATE Dipendente
+      SET
+            nome = #{nome},
+            cognome = #{cognome},
+            data_di_nascita = #{data_di_nascita},
+            codice_fiscale = #{codice_fiscale}
+      WHERE ID = #{id}
+  </update>
+  
+  <delete id="deleteDipendente" parameterType="int" >
+      DELETE FROM Dipendente WHERE ID = #{id}
+  </delete>-->
+</mapper>

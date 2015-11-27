@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="it.sensei.entities.Prova">
+   <resultMap id="result" type="it.sensei.entities.Prova" >
+        <result property="cod_cliente" column="cod_cliente"/>
+        <result property="fg_persona_fisica" column="fg_persona_fisica"/>
+        <result property="ragione_sociale" column="ragione_sociale"/>
+        <result property="cognome" column="cognome"/>
+        <result property="nome" column="nome"/>
+        <result property="cod_fiscale" column="cod_fiscale"/>
+         <result property="partita_iva" column="partita_iva"/>
+        <result property="titolo" column="titolo"/>
+        <result property="indirizzo" column="indirizzo"/>
+        <result property="civico" column="civico"/>
+        <result property="citta" column="citta"/>
+        <result property="provincia" column="provincia"/>
+        <result property="cap" column="cap"/>
+        <result property="nazione" column="nazione"/>
+         <result property="email" column="email"/>      
+        <result property="cod_pagamento" column="cod_pagamento"/>
+        <result property="dsc_pagamento" column="dsc_pagamento"/>
+        <result property="cod_iva" column="cod_iva"/>
+        <result property="dsc_iva" column="dsc_iva"/>
+        <result property="dsc_banca" column="dsc_banca"/>
+        <result property="dsc_agenzia" column="dsc_agenzia"/>
+        <result property="cc_iban" column="cc_iban"/>
+        <result property="cc_intestatario" column="cc_intestatario"/>
+        <result property="cc_cognome" column="cc_cognome"/>
+        <result property="cc_nome" column="cc_nome"/>
+        <result property="cc_cod_fiscale" column="cc_cod_fiscale"/>
+        <result property="cl_data_ultima_mod" column="cl_data_ultima_mod"/>
+        <result property="cellulare" column="cellulare"/>
+    
+        
+   </resultMap>
+   
+  
+  <select id="getAll" parameterType="it.sensei.entities.InfoClienti" resultMap="result" >
+       SELECT DISTINCT ON (c.cl_codice) c.cl_codice as cod_cliente
+             , case when c.cl_partita_iva is not null and trim(both from c.cl_partita_iva) != '' then '0' else '1' end as fg_persona_fisica
+             , case when c.cl_partita_iva is not null and trim(both from c.cl_partita_iva) != '' then c.cl_ragione_cognome else null end as ragione_sociale
+             , case when c.cl_partita_iva is null or trim(both from c.cl_partita_iva) = '' then c.cl_ragione_cognome else null end as cognome
+             , case when c.cl_partita_iva is null or trim(both from c.cl_partita_iva) = '' then c.cl_nome else null end as nome
+            
+             , c.cl_codice_fiscale as cod_fiscale
+             , c.cl_partita_iva as partita_iva
+             , c.cl_titolo as titolo
+             , c.cl_indirizzo as indirizzo
+             , c.cl_civico as civico
+             , c.cl_citta as citta
+             , c.cl_provincia as provincia
+             , c.cl_cap as cap
+             , c.cl_nazione as nazione
+             , c.cl_email as email
+             , cf.cdft_cobra AS cod_pagamento
+             , CAST(c.cl_pagamento_consolidato AS text) as dsc_pagamento
+             , cf2.cdft_valore AS cod_iva
+             , CAST(c.cl_codice_iva AS text) as dsc_iva            
+             , b.ba_nome as dsc_banca
+             , b.ba_agenzia as dsc_agenzia
+             , cb.clba_iban as cc_iban
+             , cb.clba_intestatario AS cc_intestatario
+             , cb.clba_cognome AS cc_cognome
+             , cb.clba_nome AS cc_nome
+             , cb.clba_codice_fiscale AS cc_cod_fiscale
+              , c.cl_data_ultima_mod
+             , (SELECT te_numero
+                    FROM   telefoni t
+                    WHERE t.te_id = (
+                           SELECT max(t2.te_id)
+                           FROM   telefoni t2
+                           WHERE  t2.cl_id=c.cl_id
+                           and    t2.te_tipo='CELL.'
+                           and    t2.te_priorita=1
+                    )
+           ) as cellulare
+
+
+    FROM   clienti c LEFT JOIN codici_fatturazione cf ON CAST(c.cl_pagamento_consolidato AS text ) = CAST(cf.cdft_descrizione AS text )
+              LEFT JOIN codici_fatturazione2 cf2 ON CAST(c.cl_codice_iva AS text) = CAST(cf2.cdft_descrizione AS text)
+              LEFT JOIN clienti_banche cb ON c.cl_id = cb.cl_id
+              LEFT JOIN banche b ON cb.ba_id = b.ba_id
+              
+    WHERE  
+        (
+                    coalesce(c.cl_data_ultima_mod, c.cl_data_inserimento) >=#{cl_data_ultima_mod} <!--#{data} '2015-01-01'-->
+                    and (
+                           coalesce(c.cl_data_ultima_mod, c.cl_data_inserimento) >=#{cl_data_ultima_mod} <!--#{data}'2015-01-01'-->
+                           or extract(YEAR from c.cl_data_inserimento)>=2010
+                           or exists
+                           ( 
+                                  SELECT       1
+                                  FROM   smobili s
+                                  WHERE s.cl_id = c.cl_id
+                                               and
+                                               (
+                                                      extract(YEAR from smob_data_inserimento)>=2010
+                                                      OR CAST(s.smob_attivo AS text) in (CAST('s' AS text), CAST('S' AS text))
+                                                      OR (CAST(s.smob_attivo AS text) in (CAST('n' AS text), CAST('N' AS text)) AND CAST(s.smob_stato_abbon AS text) = CAST('DISDETTO NC' AS text))
+                                               )
+                           )
+                    )
+                     
+             ) or cl_codice in  
+             <foreach collection="list" item="c" index="index"
+                open="(" close=")" separator=",">
+                #{c}
+            </foreach>           
+        
+    ORDER BY c.cl_codice 
+
+  </select>
+  
+
+  
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="it.sensei.entities.Clienti">
+   <resultMap id="result" type="it.sensei.entities.Clienti" >
+        <result property="cl_id" column="CL_ID"/>
+        <result property="util_id" column="UTIL_ID"/>
+        <result property="cl_codice" column="CL_CODICE"/>
+        <result property="cl_attivita" column="CL_ATTIVITA"/>
+        <result property="cl_ragione_cognome" column="CL_RAGIONE_COGNOME"/>
+        <result property="cl_nome" column="CL_NOME"/>
+        <result property="cl_titolo" column="CL_TITOLO"/>
+        <result property="cl_indirizzo" column="CL_INDIRIZZO"/>
+        <result property="cl_civico" column="CL_CIVICO"/>
+        <result property="cl_citta" column="CL_CITTA"/>
+        <result property="cl_cap" column="CL_CAP"/>
+        <result property="cl_provincia" column="CL_PROVINCIA"/>
+        <result property="cl_nazione" column="CL_NAZIONE"/>
+        <result property="cl_codice_fiscale" column="CL_CODICE_FISCALE"/>
+        <result property="cl_partita_iva" column="CL_PARTITA_IVA"/>
+        <result property="cl_data_nascita" column="CL_DATA_NASCITA"/>
+        <result property="cl_citta_nascita" column="CL_CITTA_NASCITA"/>
+        <result property="cl_provincia_nascita" column="CL_PROVINCIA_NASCITA"/>
+        <result property="cl_nazione_nascita" column="CL_NAZIONE_NASCITA"/>
+        <result property="cl_data_inserimento" column="CL_DATA_INSERIMENTO"/>
+        <result property="cl_note" column="CL_NOTE"/>
+        <result property="cl_op_ultima_mod" column="CL_OP_ULTIMA_MOD"/>
+        <result property="cl_op_creazione" column="CL_OP_CREAZIONE"/>
+        <result property="cl_note_fatturazione" column="CL_NOTE_FATTURAZIONE"/>
+        <result property="cl_email" column="CL_EMAIL"/>
+        <result property="cl_data_ultima_mod" column="CL_DATA_ULTIMA_MOD"/>
+        <result property="cl_altri_rec_fatt" column="CL_ALTRI_REC_FATT"/>
+        <result property="cl_altri_rec_gest" column="CL_ALTRI_REC_GEST"/>
+        <result property="cl_codice_iva" column="CL_CODICE_IVA"/>
+        <result property="cl_utilizzatore" column="CL_UTILIZZATORE"/>
+        <result property="cl_titolo_fattura" column="CL_TITOLO_FATTURA"/>
+        <result property="cl_esatto_eur" column="CL_ESATTO_EUR"/>
+        <result property="cl_esatto_lis" column="CL_ESATTO_LIS"/>
+        <result property="inm_id" column="INM_ID"/>
+        <result property="cl_pagamento_consolidato" column="CL_PAGAMENTO_CONSOLIDATO"/>
+        <result property="cl_provenienza" column="CL_PROVENIENZA"/>
+        <result property="cl_flaganagrafica" column="CL_FLAGANAGRAFICA"/>
+        <result property="cl_consenso" column="CL_CONSENSO"/>
+<!--        <collection property="clienti_banche" ofType="it.sensei.nucleoproject.entita.Clienti_banche"
+                    column="cl_id" select="selectCliente_bancaFromClienti"/>-->
+    
+        
+   </resultMap>
+   
+  
+ <select id="getAllClienti"  resultMap="result">
+        SELECT * FROM Clienti
+  </select>
+  <!-- 
+  <select id="GetByJoin" parameterType="java.lang.String" resultType="entities.Clienti">
+    SELECT
+     C.*,Cb.*
+     FROM CLIENTI C
+     LEFT JOIN CLIENTI_BANCHE Cb
+     ON C.cl_id = Cb.cl_id
+     WHERE cl_id = #{cl_id}
+  </select>
+  -->
+<!--  <select id="getById" parameterType="java.lang.String"  resultMap = "result">
+      SELECT
+        cl_id,
+        util_id,
+        cl_codice,
+      cl_attivita,
+      cl_ragione_cognome,
+        data_di_nascita,
+        codice_fiscale
+      FROM Dipendente
+      WHERE ID = #{id}
+  </select> -->
+  
+<!--  <update id="updateDipendente" parameterType="dip.Dipendente" >
+      UPDATE Dipendente
+      SET
+            nome = #{nome},
+            cognome = #{cognome},
+            data_di_nascita = #{data_di_nascita},
+            codice_fiscale = #{codice_fiscale}
+      WHERE ID = #{id}
+  </update>
+  
+  <delete id="deleteDipendente" parameterType="int" >
+      DELETE FROM Dipendente WHERE ID = #{id}
+  </delete>-->
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="it.sensei.entities.Risultato">
+   <resultMap id="result" type="it.sensei.entities.Risultato" >
+        <result property="id_contratto" column="id_contratto"/>
+        <result property="id_abbonamento" column="id_abbonamento"/>
+        <result property="cod_cliente" column="cod_cliente"/>
+        <result property="tipo_soggetto" column="tipo_soggetto"/>
+        <result property="ragione_sociale" column="ragione_sociale"/>
+        <result property="cognome" column="cognome"/>
+        <result property="nome" column="nome"/>
+        <result property="codice_fiscale" column="codice_fiscale"/>
+         <result property="partita_iva" column="partita_iva"/>
+        <result property="cod_contratto" column="cod_contratto"/>
+        <result property="stato_abbonamento" column="stato_abbonamento"/>
+        <result property="stato_sistema" column="stato_sistema"/>
+        <result property="stato_mobile" column="stato_mobile"/>
+        <result property="stato_centrale" column="stato_centrale"/>
+        <result property="fg_fatturare" column="fg_fatturare"/>
+         <result property="fg_disdetto_alla_scadenza" column="fg_disdetto_alla_scadenza"/>      
+        <result property="cod_servizio" column="cod_servizio"/>
+        <result property="dt_fatturazione" column="dt_fatturazione"/>
+        <result property="dt_inizio_competenza" column="dt_inizio_competenza"/>
+        <result property="dt_scadenza_contratto" column="dt_scadenza_contratto"/>
+        <result property="periodicita" column="periodicita"/>
+        <result property="importo_rata" column="importo_rata"/>
+        <result property="tipo_centralina" column="tipo_centralina"/>
+        <result property="dt_collaudo" column="dt_collaudo"/>
+        <result property="targa" column="targa"/>
+        <result property="telaio" column="telaio"/>
+        <result property="marca" column="marca"/>
+        <result property="modello" column="modello"/>
+        <result property="colore_vettura" column="colore_vettura"/>
+        <result property="dt_prima_attivazione" column="dt_prima_attivazione"/>
+        <result property="dt_ultima_attivazione" column="dt_ultima_attivazione"/>
+        <result property="costo_hw" column="costo_hw"/>
+        <result property="costo_canone" column="costo_canone"/>
+        <result property="cod_contratto_padre" column="cod_contratto_padre"/>
+        <result property="dt_ultima_modifica_nan" column="dt_ultima_modifica_nan"/>
+            
+   </resultMap>
+   
+   <select id="getAllContratti" parameterType="it.sensei.entities.InfoClienti" resultMap="result" >
+        SELECT s.smob_id as id_contratto
+             , a.ab_id as id_abbonamento
+             , c.cl_codice as cod_cliente
+             , case when c.cl_partita_iva is not null then 'PERSONA GIURIDICA' else 'PERSONA FISICA' end as tipo_soggetto
+             , case when c.cl_partita_iva is not null then c.cl_ragione_cognome else null end as ragione_sociale
+             , case when c.cl_partita_iva is null then c.cl_ragione_cognome else null end as cognome
+             , case when c.cl_partita_iva is null then c.cl_nome else null end as nome
+             , c.cl_codice_fiscale as codice_fiscale
+             , c.cl_partita_iva as partita_iva
+             , s.smob_code as cod_contratto
+             , case
+                    when CAST(s.smob_attivo AS text) in (CAST('n' AS text), CAST('N' AS text)) then CAST('DISDETTO' AS text)
+                    when s.smob_flagcontratto = FALSE then s.smob_stato_abbon || ' (NO FLAG CONTRATTO)'
+                    else s.smob_stato_abbon
+               end as stato_abbonamento
+             , s.smob_stato_sistema as stato_sistema
+             , s.smob_stato_mobile as stato_mobile
+             , s.smob_stato_centrale as stato_centrale
+             , case
+                    when s.smob_stato_mobile not in (CAST('DA RITIRARE' AS text),  CAST('CONSEGNATA' AS text), CAST('CONSEGNATO' AS text)) then '0'
+                    when CAST(s.smob_attivo AS text) in (CAST('n' AS text), CAST('N' AS text)) then '0'
+                    when s.smob_attivo is null or a.ab_fatturare is null or s.smob_flagcontratto is null then null
+                    when a.ab_fatturare=TRUE and s.smob_flagcontratto = TRUE then '1'
+                    else '0'
+               end as fg_fatturare
+             , case when upper(ab_das)='SI' then '1' when upper(ab_das)='NO' then '0' when ab_das is null then '0' else null end as fg_disdetto_alla_scadenza
+             , case when CAST(s.smob_tipologia AS text) = 'COMODATO' then 'COMODATO' else a.ab_nome end as cod_servizio
+             , a.ab_data_fatturazione as dt_fatturazione
+             , a.ab_inizio as dt_inizio_competenza
+             , a.ab_scadenza as dt_scadenza_contratto
+             , a.ab_numero_rate as periodicita
+             , a.ab_rata as importo_rata
+             , p.pm_cod as tipo_centralina
+             , s.smob_data_collaudo as dt_collaudo
+             , substring(m.mo_targa, 0, 25) as targa
+             , m.mo_telaio as telaio
+             , m.mo_marca as marca
+             , m.mo_modello as modello
+             , m.mo_colore as colore_vettura
+             , (select min(st.abst_data_modifica) from ABBONAMENTI_STORICO st where st.abst_operazione = 'ATTIVAZIONE FLAG CONTRATTO' and st.ab_id = a.ab_id) as dt_prima_attivazione
+             , (select max(st.abst_data_modifica) from ABBONAMENTI_STORICO st where st.abst_operazione = 'ATTIVAZIONE FLAG CONTRATTO' and st.ab_id = a.ab_id) as dt_ultima_attivazione
+             , CAST(a.ab_tg AS text) AS costo_hw
+        , CAST(a.ab_vg AS text) AS costo_canone
+        , a.ab_altro_abbonamento as cod_contratto_padre
+        , greatest(
+                           smob_data_ultima_mod
+                           , coalesce(ab_data_ult_mod, ab_data_inserimento)
+                           , ab_data_modifica_rata
+                           , coalesce(pm_data_ultima_mod, pm_data_inserimento)
+                           , coalesce(mo_data_ultima_mod, mo_data_inserimento)
+               ) as dt_ultima_modifica_nan
+FROM   smobili s
+             LEFT JOIN mobili m ON s.mo_id = m.mo_id
+             LEFT JOIN abbonamenti a ON s.ab_id = a.ab_id
+             LEFT JOIN periferiche_mobili p ON s.pm_id = p.pm_id
+             LEFT JOIN clienti c ON s.cl_id = c.cl_id
+WHERE (
+                    (
+<!--                           /*(
+                                  CAST(s.smob_attivo AS text) IN (CAST('s' AS text), CAST('S' AS text))
+                                  OR    
+                                  CAST(s.smob_attivo AS text) IN (CAST('n' AS text), CAST('N' AS text)) AND CAST(s.smob_stato_abbon AS text) IN (CAST('DISDETTO NC' AS text), CAST('DISDETTO' AS text))
+                           )
+                           AND */-->
+                           CAST(s.smob_tipologia AS text) NOT IN ( CAST('TEST' AS text), CAST('AZIENDALE' AS text), CAST('POLIZZA' AS text))
+                           /*AND CAST(s.smob_tipologia AS text) != CAST('COMODATO' AS text) */
+                           and (
+                                 smob_data_ultima_mod >= #{cl_data_ultima_mod}  <!-- '2015-01-01'-->
+                                  or coalesce(ab_data_ult_mod, ab_data_inserimento) >= #{cl_data_ultima_mod}
+                                  or ab_data_modifica_rata >= #{cl_data_ultima_mod}
+                                  or coalesce(pm_data_ultima_mod, pm_data_inserimento)  >= #{cl_data_ultima_mod}
+                                  or coalesce(mo_data_ultima_mod, mo_data_inserimento) >= #{cl_data_ultima_mod}
+                           )
+              
+                    ) or  s.smob_code in
+<!--                        /*or */ /*SEGNAPOSTO_CONTRATTI_DA_AGGIORNARE*/-->
+                    <foreach collection="list" item="s" index="index"
+                        open="(" close=")" separator=",">
+                        #{s}
+                    </foreach> 
+                    
+             ) AND not exists (
+                    select       1
+                    from   smobili s2
+                    where s2.smob_code = s.smob_code
+                           and s2.smob_id > s.smob_id
+             )
+ 
+   
+   
+   </select>
+   
+   </mapper>
